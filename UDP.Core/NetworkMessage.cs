@@ -3,7 +3,7 @@
     public class UdpMessage
     {
         private const ushort _maxPacketSize = ushort.MaxValue - 28; // 20 байт заголовка ip + 8 байт заголовка udp.
-        // Максимальный размер данных впакете через интернет 8192
+        // Максимальный размер данных в пакете через интернет 8192 байт.
 
         public int Size { get; init; }
 

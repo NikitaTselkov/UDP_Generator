@@ -1,0 +1,111 @@
+﻿<Window x:Class="UDP.View.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}" MinHeight="400" Height="400" MinWidth="600" Width="600" >
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75*"/>
+            <RowDefinition Height="130*"/>
+            <RowDefinition Height="130*"/>
+            <RowDefinition Height="90*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Grid.Row="0" VerticalAlignment="Bottom">
+
+            <DockPanel HorizontalAlignment="Right">
+                <Label Content="Source Ip:"></Label>
+                <TextBox Text="{Binding SenderIp, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+            </DockPanel>
+
+            <DockPanel HorizontalAlignment="Right">
+                <Label Content="Destination Ip:"></Label>
+                <TextBox Text="{Binding ReceveIp, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Grid.Row="0" VerticalAlignment="Bottom">
+
+            <DockPanel HorizontalAlignment="Left">
+                <Label Content="Source Port:"></Label>
+                <TextBox Text="{Binding SenderPort, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+            </DockPanel>
+
+            <DockPanel HorizontalAlignment="Left">
+                <Label Content="Destination Port:"></Label>
+                <TextBox Text="{Binding RecevePort, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <StackPanel Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Top">
+
+            <DockPanel HorizontalAlignment="Center">
+                <Label Content="Timeout:"></Label>
+                <TextBox Text="{Binding ReceveTimeout, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+            </DockPanel>
+
+            <DockPanel HorizontalAlignment="Center">
+                <Label Content="Min Udp Packet Size:"></Label>
+                <TextBox Text="{Binding MinUdpPacketSize, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+                <Label Content="Bytes"></Label>
+            </DockPanel>
+
+            <DockPanel HorizontalAlignment="Center">
+                <Label Content="Max Udp Packet Size:"></Label>
+                <TextBox Text="{Binding MaxUdpPacketSize, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+                <Label Content="Bytes"></Label>
+            </DockPanel>
+
+            <DockPanel HorizontalAlignment="Center">
+                <Label Content="Mac:"></Label>
+                <TextBox x:Name="MacInput" Text="{Binding Mac, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
+                <Button Content="Add" Command="{Binding AddMac}" Width="50" Height="{Binding ElementName=MacInput, Path=ActualHeight}" Margin="0" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <ListView Grid.Row="2"
+                  ScrollViewer.CanContentScroll="True" 
+                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ItemsSource="{Binding Macs}" 
+                  Grid.Column="0">
+
+            <ListView.ItemTemplate>
+                <DataTemplate DataType="ListViewItem">
+                    <Grid Width="{Binding RelativeSource={RelativeSource AncestorType=ListView, Mode=FindAncestor}, Path=ActualWidth}">
+                        <DockPanel HorizontalAlignment="Center">
+                            <ContentPresenter Height="20" x:Name="content" Content="{Binding}" />
+                            <Button x:Name="deleteBtn" 
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.DeleteMac}"
+                                    CommandParameter="{Binding}" Content="Delete" Margin="20 0" Width="50" 
+                                    Height="{Binding ElementName=content, Path=ActualHeight}" />
+                        </DockPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            
+        </ListView>
+
+        <ListView Grid.Row="2"
+                  ScrollViewer.CanContentScroll="True"
+                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                  Grid.Column="1">
+
+        </ListView>
+
+        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Grid.Row="3">
+            <Button Content="Start UDP Traffic" Command="{Binding GenerateRandomUdpTraffic}" />
+            <Button Content="Start Listen UDP Traffic" Command="{Binding StartListenUdpTraffic}" />
+        </DockPanel>
+
+    </Grid>
+</Window>
