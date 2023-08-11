@@ -61,16 +61,6 @@ namespace UDP.Sender
                     if (_isStarted == false)
                         break;
 
-                    string stringMAC = GetRemoteMAC(remotePoint);
-                    string remoteMAC = string.Concat(stringMAC.ToUpper().Select((c, i) => c + (i % 2 != 0 ? "-" : ""))).TrimEnd('-');
-
-                    // Проверить MAC
-                    if (Config.Macs.Contains(remoteMAC))
-                    {
-                        _logger.PushMessage("MAC адрес не совпадает", LoggerTypes.Info);
-                        continue;
-                    }
-
                     int bytes = clientSender.Send(packet.ToArray(), remotePoint);
 
                     lostPackets += bytes;
@@ -87,7 +77,7 @@ namespace UDP.Sender
                         _logger.PushMessage($"Получено: {packetReceve.Length} байт", LoggerTypes.Info);
                         _logger.PushMessage($"Удаленный адрес: {receveEndPoint}", LoggerTypes.Info);
                     }
-                    catch (SocketException e) { }
+                    catch (SocketException e) { _logger.PushMessage(e.Message, LoggerTypes.Error); }
 
                     _logger.PushMessage($"Потеряно: {lostPackets} байт");
                 }
@@ -102,26 +92,6 @@ namespace UDP.Sender
                 clientRecever?.Close();
                 _logger.PushMessage("Соединение закрыто");
             }
-        }
-
-        string GetRemoteMAC(IPEndPoint remoteEndpoint)
-        {
-            string remoteMac = string.Empty;
-
-            try
-            {
-                IPAddress remoteIpAddress = remoteEndpoint.Address;
-
-                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
-                           where nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
-                               && nic.OperationalStatus == OperationalStatus.Up
-                           select nic.GetPhysicalAddress();
-
-                remoteMac = macs.FirstOrDefault()?.ToString() ?? string.Empty;
-            }
-            catch { }
-
-            return remoteMac;
         }
     }
 }

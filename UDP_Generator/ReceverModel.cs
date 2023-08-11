@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using UDP.Core;
+using System.Net.NetworkInformation;
 
 namespace UDP.Reciver
 {
@@ -46,6 +47,17 @@ namespace UDP.Reciver
                         {
                             IPEndPoint RemoteEndPoint = null;
                             var result = clientRecever.Receive(ref RemoteEndPoint);
+
+                            string stringMAC = GetRemoteMAC(RemoteEndPoint);
+                            string remoteMAC = string.Concat(stringMAC.ToUpper().Select((c, i) => c + (i % 2 != 0 ? "-" : ""))).TrimEnd('-');
+
+                            // Проверить MAC
+                            if (Config.Macs.Contains(remoteMAC))
+                            {
+                                _logger.PushMessage("MAC адрес не совпадает", LoggerTypes.Info);
+                                continue;
+                            }
+
                             recevedPackets++;
 
                             _logger.PushMessage($"Получено {recevedPackets} пакетов");
@@ -77,6 +89,26 @@ namespace UDP.Reciver
                     _logger.PushMessage("Соединение закрыто");
                 }
             });
+        }
+
+        string GetRemoteMAC(IPEndPoint remoteEndpoint)
+        {
+            string remoteMac = string.Empty;
+
+            try
+            {
+                IPAddress remoteIpAddress = remoteEndpoint.Address;
+
+                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
+                           where nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+                               && nic.OperationalStatus == OperationalStatus.Up
+                           select nic.GetPhysicalAddress();
+
+                remoteMac = macs.FirstOrDefault()?.ToString() ?? string.Empty;
+            }
+            catch { }
+
+            return remoteMac;
         }
     }
 }

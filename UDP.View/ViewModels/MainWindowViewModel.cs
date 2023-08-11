@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Net.Sockets;
 using System.Threading;
+using UDP.View.ViewModels.ValidationAttributes;
 
 namespace UDP.View.ViewModels
 {
@@ -43,7 +44,7 @@ namespace UDP.View.ViewModels
 
         private string _senderIp = Config.SenderIp;
         [Required]
-        [RegularExpression("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")]
+        [RegularExpression("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ErrorMessage = "The IP address must be in the format 192.168.0.1")]
         public string SenderIp
         {
             get { return _senderIp; }
@@ -57,7 +58,7 @@ namespace UDP.View.ViewModels
 
         private string _receveIp = Config.ReceveIp;
         [Required]
-        [RegularExpression("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")]
+        [RegularExpression("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ErrorMessage = "The IP address must be in the format 192.168.0.1")]
         public string ReceveIp
         {
             get { return _receveIp; }
@@ -71,6 +72,7 @@ namespace UDP.View.ViewModels
 
         private int _senderPort = Config.SenderPort;
         [Required]
+        [NotCompare(nameof(RecevePort))]
         [Range(0, ushort.MaxValue)]
         public int SenderPort
         {
@@ -85,6 +87,7 @@ namespace UDP.View.ViewModels
 
         private int _recevePort = Config.RecevePort;
         [Required]
+        [NotCompare(nameof(SenderPort))]
         [Range(0, ushort.MaxValue)]
         public int RecevePort
         {
@@ -112,7 +115,7 @@ namespace UDP.View.ViewModels
         }
 
         private string _mac;
-        [RegularExpression("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")]
+        [RegularExpression("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", ErrorMessage = "The MAC address must be in the format A5-22-B3-25-65-F3")]
         public string Mac
         {
             get { return _mac; }
