@@ -7,13 +7,27 @@ namespace UDP.Sender
 {
     public class SenderModel
     {
+        private readonly Logger _logger;
+        private bool _isStarted;
+
+        public SenderModel(string loggerTitle = "")
+        {
+            _logger = string.IsNullOrEmpty(loggerTitle) ? new Logger("Sender") : new Logger(loggerTitle);
+        }
+
+        public void StopGenerateRandomUdpTraffic()
+        { 
+            _isStarted = false;
+        }
+
         public async void GenerateRandomUdpTrafficAsinc()
         {
             var random = new Random();
+            _isStarted = true;
 
             await Task.Run(() =>
             {
-                while (true)
+                while (_isStarted)
                 {
                     var data = new byte[random.Next(Config.MinUdpPacketSize, Config.MaxUdpPacketSize)];
                     Array.Fill(data, (byte)random.Next(0, byte.MaxValue));
@@ -40,15 +54,20 @@ namespace UDP.Sender
                 clientSender = new UdpClient(Config.RecevePort);
                 clientRecever = new UdpClient(senderPoint);
 
+                _logger.PushMessage("Начата отправка");
+
                 foreach (var packet in message.Packets)
                 {
+                    if (_isStarted == false)
+                        break;
+
                     string stringMAC = GetRemoteMAC(remotePoint);
                     string remoteMAC = string.Concat(stringMAC.ToUpper().Select((c, i) => c + (i % 2 != 0 ? "-" : ""))).TrimEnd('-');
 
                     // Проверить MAC
                     if (Config.Macs.Contains(remoteMAC))
                     {
-                        Console.WriteLine("MAC адрес не совпадает");
+                        _logger.PushMessage("MAC адрес не совпадает", LoggerTypes.Info);
                         continue;
                     }
 
@@ -57,29 +76,31 @@ namespace UDP.Sender
                     lostPackets += bytes;
                     sendPackets++;
 
-                    Console.WriteLine($"Отправлено: {bytes} байт");
-                    Console.WriteLine($"Отправлено: {sendPackets} пакетов");
+                    _logger.PushMessage($"Отправлено: {bytes} байт на {remotePoint}");
+                    _logger.PushMessage($"Отправлено: {sendPackets} пакетов");
 
                     try
                     {
                         clientRecever.Client.ReceiveTimeout = Config.ReceveTimeout;
                         var packetReceve = clientRecever.Receive(ref receveEndPoint);
                         lostPackets -= BitConverter.ToInt32(packetReceve);
-                        Console.WriteLine($"получено: {packetReceve.Length} байт");
-                        Console.WriteLine($"Удаленный адрес: {receveEndPoint}");
+                        _logger.PushMessage($"Получено: {packetReceve.Length} байт", LoggerTypes.Info);
+                        _logger.PushMessage($"Удаленный адрес: {receveEndPoint}", LoggerTypes.Info);
                     }
                     catch (SocketException e) { }
 
-                    Console.WriteLine($"потеряно: {lostPackets} байт");
+                    _logger.PushMessage($"Потеряно: {lostPackets} байт");
                 }
-
-                Console.WriteLine($"Отправлен файл размером: {message.Size} байт");
+            }
+            catch (SocketException e)
+            {
+                _logger.PushMessage(e.Message, LoggerTypes.Error);
             }
             finally
             {
                 clientSender?.Close();
                 clientRecever?.Close();
-                Console.WriteLine("Соединение закрыто");
+                _logger.PushMessage("Соединение закрыто");
             }
         }
 

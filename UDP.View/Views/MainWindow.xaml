@@ -97,14 +97,43 @@
 
         <ListView Grid.Row="2"
                   ScrollViewer.CanContentScroll="True"
-                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ItemsSource="{Binding Log}" 
                   Grid.Column="1">
 
         </ListView>
 
         <DockPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Grid.Row="3">
-            <Button Content="Start UDP Traffic" Command="{Binding GenerateRandomUdpTraffic}" />
-            <Button Content="Start Listen UDP Traffic" Command="{Binding StartListenUdpTraffic}" />
+            <Button Command="{Binding GenerateRandomUdpTraffic}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsStartGenerateTrafficButtonPressed}" Value="True">
+                                <Setter Property="Content" Value="Stop UDP Traffic" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsStartGenerateTrafficButtonPressed}" Value="False">
+                                <Setter Property="Content" Value="Start UDP Traffic" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            
+            <Button Command="{Binding StartListenUdpTraffic}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsStartReceveButtonPressed}" Value="True">
+                                <Setter Property="Content" Value="Stop Listen UDP Traffic" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsStartReceveButtonPressed}" Value="False">
+                                <Setter Property="Content" Value="Start Listen UDP Traffic" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </DockPanel>
 
     </Grid>

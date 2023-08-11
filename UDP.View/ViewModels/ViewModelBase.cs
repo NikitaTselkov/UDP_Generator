@@ -56,6 +56,11 @@ namespace UDP.View.ViewModels
             }
         }
 
+        internal bool IsAllValid()
+        {
+            return string.IsNullOrEmpty(Error);
+        }
+
         internal bool IsValid(string propertyName)
         {
             return string.IsNullOrEmpty(this[propertyName]);

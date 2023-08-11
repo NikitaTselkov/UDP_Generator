@@ -1,57 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using UDP.Core;
 
 namespace UDP.Reciver
 {
     public class ReceverModel
     {
+        private readonly Logger _logger;
+        private bool _isStarted;
+
+        public ReceverModel(string loggerTitle = "")
+        {
+            _logger = string.IsNullOrEmpty(loggerTitle) ? new Logger("Recever") : new Logger(loggerTitle);
+        }
+
+        public void StopReceveTrafficLoop()
+        {
+            _isStarted = false;
+        }
+
         public async void ReceveTrafficLoopAsinc()
         {
+            _isStarted = true;
+
             await Task.Run(() =>
             {
                 UdpClient clientSender = null, clientRecever = null;
-                IPEndPoint senderEndPoint = new IPEndPoint(IPAddress.Parse(Config.SenderIp), Config.SenderPort);
-                IPEndPoint receveEndPoint = new IPEndPoint(IPAddress.Parse(Config.ReceveIp), Config.RecevePort);
-                var recevedPackets = 0;
 
                 try
-                {
+                {                 
+                    IPEndPoint senderEndPoint = new IPEndPoint(IPAddress.Parse(Config.SenderIp), Config.SenderPort);
+                    IPEndPoint receveEndPoint = new IPEndPoint(IPAddress.Parse(Config.ReceveIp), Config.RecevePort);
+                    var recevedPackets = 0;
+
+                    _logger.PushMessage("Начато прослушивание");
+               
                     clientRecever = new UdpClient(receveEndPoint);
                     clientSender = new UdpClient(Config.SenderPort);
 
-                    while (true)
+                    while (_isStarted)
                     {
-                        IPEndPoint RemoteEndPoint = null;
-                        var result = clientRecever.Receive(ref RemoteEndPoint);
-                        recevedPackets++;
-
-                        Console.WriteLine($"Получено {recevedPackets} пакетов");
-
-                        if (result.Length > 0)
+                        clientRecever.Client.ReceiveTimeout = Config.ReceveTimeout;
+                        
+                        try 
                         {
-                            Console.WriteLine($"Получено {result.Length} байт");
-                            Console.WriteLine($"Удаленный адрес: {RemoteEndPoint}");
+                            IPEndPoint RemoteEndPoint = null;
+                            var result = clientRecever.Receive(ref RemoteEndPoint);
+                            recevedPackets++;
 
-                            byte[] packetSend = BitConverter.GetBytes(result.Length);
+                            _logger.PushMessage($"Получено {recevedPackets} пакетов");
 
-                            clientSender.Send(packetSend, senderEndPoint);
-                            Console.WriteLine($"Отправлено: {packetSend.Length} байт");
+                            if (result?.Length > 0)
+                            {
+                                _logger.PushMessage($"Получено {result.Length} байт от {senderEndPoint}");
 
-                            clientRecever.Client.ReceiveTimeout = Config.ReceveTimeout;
+                                byte[] packetSend = BitConverter.GetBytes(result.Length);
+
+                                clientSender.Send(packetSend, senderEndPoint);
+                                _logger.PushMessage($"Отправлено: {packetSend.Length} байт", LoggerTypes.Info);
+                            }
+
+                        }
+                        catch (SocketException e)
+                        {
+                            _logger.PushMessage(e.Message);
                         }
                     }
                 }
-                catch (SocketException e) { }
+                catch (SocketException e)
+                { 
+                    _logger.PushMessage(e.Message, LoggerTypes.Error);
+                }
                 finally
                 {
                     clientRecever?.Close();
-                    Console.WriteLine("Соединение закрыто");
+                    _logger.PushMessage("Соединение закрыто");
                 }
             });
         }

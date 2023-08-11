@@ -1,13 +1,12 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using UDP.Core;
-using UDP.Reciver;
+﻿using UDP.Reciver;
 
 Console.WriteLine("UDP Resiver");
 
-var recever = new ReceverModel();
+var recever = new ReceverModel(loggerTitle: "Recever CMD");
 
 recever.ReceveTrafficLoopAsinc();
 
 
 Console.ReadLine();
+
+recever.StopReceveTrafficLoop();
